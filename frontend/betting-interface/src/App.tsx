@@ -10,6 +10,7 @@ import { BettingInterface } from './pages/BettingInterface';
 import { LiveBetting } from './pages/LiveBetting';
 import { BetHistory } from './pages/BetHistory';
 import { Profile } from './pages/Profile';
+import { Leaderboard } from './pages/Leaderboard';
 import { useThemeStore } from './store/themeStore';
 import { wagmiConfig, rainbowKitTheme } from './utils/walletConfig';
 
@@ -47,6 +48,7 @@ function App() {
                     <Route path="/live" element={<LiveBetting />} />
                     <Route path="/history" element={<BetHistory />} />
                     <Route path="/profile" element={<Profile />} />
+                    <Route path="/leaderboard" element={<Leaderboard />} />
                   </Routes>
                 </main>
               </motion.div>

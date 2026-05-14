@@ -18,6 +18,8 @@ import { BetHistory } from '../components/BetHistory';
 import { SportsFilter } from '../components/SportsFilter';
 import { LiveScore } from '../components/LiveScore';
 import { SportsEvent, BetType } from '../types/sports';
+import { Toast, ToastType } from '../components/Toast';
+import { parseStellarError } from '../utils/stellarErrors';
 
 export const BettingInterface: React.FC = () => {
   const {
@@ -37,6 +39,8 @@ export const BettingInterface: React.FC = () => {
   const [selectedSport, setSelectedSport] = useState('all');
   const [showLiveOnly, setShowLiveOnly] = useState(false);
   const [sortBy, setSortBy] = useState<'time' | 'odds' | 'volume'>('time');
+  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
+  const [retryPending, setRetryPending] = useState(false);
 
   useEffect(() => {
     // Fetch events from API
@@ -115,9 +119,14 @@ export const BettingInterface: React.FC = () => {
     if (!isConnected || !account || betSlip.length === 0) return;
 
     try {
+      setRetryPending(false);
       await placeBet();
+      setToast({ message: 'Bet placed successfully!', type: 'success' });
     } catch (error) {
-      console.error('Failed to place bet:', error);
+      const parsed = parseStellarError(error);
+      console.error('[Stellar] Transaction error:', error);
+      setToast({ message: parsed.message, type: 'error' });
+      if (parsed.retryable) setRetryPending(true);
     }
   };
 
@@ -162,6 +171,9 @@ export const BettingInterface: React.FC = () => {
       transition={{ duration: 0.5 }}
       className="grid grid-cols-1 lg:grid-cols-4 gap-6"
     >
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+      )}
       {/* Main Content */}
       <div className="lg:col-span-3">
         {/* Header */}
@@ -277,6 +289,15 @@ export const BettingInterface: React.FC = () => {
           }}
           formatOdds={formatOdds}
         />
+
+        {retryPending && (
+          <button
+            onClick={handlePlaceBet}
+            className="w-full py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-semibold transition-colors"
+          >
+            Retry Transaction
+          </button>
+        )}
 
         {/* Quick Stats */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">

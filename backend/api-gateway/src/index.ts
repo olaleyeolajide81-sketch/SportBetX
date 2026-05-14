@@ -17,10 +17,17 @@ import { oddsRoutes } from './routes/odds';
 import { liquidityRoutes } from './routes/liquidity';
 import { oracleRoutes } from './routes/oracle';
 import { governanceRoutes } from './routes/governance';
+import { leaderboardRoutes } from './routes/leaderboard';
 import { initializeSocketHandlers } from './services/socketService';
 
 // Load environment variables
 dotenv.config();
+
+// Fail fast in production if JWT_SECRET is not set
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET must be set in production');
+  process.exit(1);
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -46,9 +53,26 @@ app.use(helmet({
       connectSrc: ["'self'", "ws:", "wss:"],
     },
   },
+  // Enable HSTS in production only
+  hsts: process.env.NODE_ENV === 'production'
+    ? { maxAge: 31536000, includeSubDomains: true, preload: true }
+    : false,
 }));
+
+// Build CORS allowlist from env var; fall back to localhost in development only
+const allowedOrigins: string[] = process.env.CORS_ALLOWED_ORIGINS
+  ? process.env.CORS_ALLOWED_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean)
+  : process.env.NODE_ENV === 'production'
+    ? [] // no fallback in production — must be explicitly set
+    : ['http://localhost:3100', 'http://localhost:3200', 'http://localhost:3300', 'http://localhost:3400', 'http://localhost:3500'];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3100',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. server-to-server, curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS: origin '${origin}' not allowed`));
+  },
   credentials: true,
 }));
 app.use(compression());
@@ -97,6 +121,7 @@ app.use('/api/v1/odds', oddsRoutes);
 app.use('/api/v1/liquidity', liquidityRoutes);
 app.use('/api/v1/oracle', oracleRoutes);
 app.use('/api/v1/governance', governanceRoutes);
+app.use('/api/v1/leaderboard', leaderboardRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
@@ -116,7 +141,7 @@ const server = createServer(app);
 // Create Socket.IO server
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3100',
+    origin: allowedOrigins.length > 0 ? allowedOrigins : false,
     methods: ['GET', 'POST'],
     credentials: true,
   },
