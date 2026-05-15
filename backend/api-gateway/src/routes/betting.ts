@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { body, param, query } from 'express-validator';
 import { validate } from '../middleware/validate';
+import { stellarRateLimit } from '../middleware/stellarRateLimit';
 import { getOrSet, invalidateKey } from '../config/redis';
 import { logger } from '../utils/logger';
 
@@ -9,22 +10,33 @@ export const bettingRoutes = Router();
 const EVENTS_TTL = 30; // seconds (issue #15)
 const ODDS_TTL = 5;    // seconds (issue #15)
 
-// GET /api/v1/betting/events - cached 30s
-bettingRoutes.get('/events', async (_req: Request, res: Response) => {
-  try {
-    const events = await getOrSet('events:all', EVENTS_TTL, async () => {
-      // TODO: replace with real DB query
-      return [
-        { id: '1', title: 'Lakers vs Celtics', sport: 'basketball', status: 'upcoming' },
-        { id: '2', title: 'Real Madrid vs Barcelona', sport: 'football', status: 'live' },
-      ];
-    });
-    res.json({ data: events });
-  } catch (err) {
-    logger.error('Failed to fetch events', { err });
-    res.status(500).json({ error: 'Failed to fetch events' });
+// GET /api/v1/betting/events - cached 30s, supports ?search= query param
+bettingRoutes.get(
+  '/events',
+  [query('search').optional().isString().trim()],
+  validate,
+  async (req: Request, res: Response) => {
+    const search = (req.query.search as string | undefined)?.toLowerCase() ?? '';
+    try {
+      const allEvents = await getOrSet('events:all', EVENTS_TTL, async () => {
+        // TODO: replace with real DB query
+        return [
+          { id: '1', title: 'Lakers vs Celtics', sport: 'basketball', status: 'upcoming' },
+          { id: '2', title: 'Real Madrid vs Barcelona', sport: 'football', status: 'live' },
+          { id: '3', title: 'Federer vs Nadal', sport: 'tennis', status: 'upcoming' },
+          { id: '4', title: 'Chiefs vs Eagles', sport: 'football', status: 'upcoming' },
+        ];
+      });
+      const events = search
+        ? allEvents.filter((e: { title: string }) => e.title.toLowerCase().includes(search))
+        : allEvents;
+      res.json({ data: events });
+    } catch (err) {
+      logger.error('Failed to fetch events', { err });
+      res.status(500).json({ error: 'Failed to fetch events' });
+    }
   }
-});
+);
 
 // GET /api/v1/betting/events/:eventId/odds - cached 5s
 bettingRoutes.get('/events/:eventId/odds', async (req: Request, res: Response) => {
@@ -93,18 +105,24 @@ bettingRoutes.get(
   }
 );
 
-// POST /api/v1/betting/place - with validation (issue #18)
+// POST /api/v1/betting/place - with validation (issue #18) and per-address rate limiting (issue #27)
 bettingRoutes.post(
   '/place',
   [
+    body('stellarAddress')
+      .isString()
+      .notEmpty()
+      .matches(/^G[A-Z2-7]{55}$/)
+      .withMessage('stellarAddress must be a valid Stellar public key'),
     body('eventId').isUUID().withMessage('eventId must be a valid UUID'),
     body('amount').isFloat({ gt: 0 }).withMessage('amount must be a positive number'),
     body('selection').isIn(['home', 'away', 'draw']).withMessage('selection must be home, away, or draw'),
   ],
   validate,
+  stellarRateLimit,
   async (req: Request, res: Response) => {
-    const { eventId, amount, selection } = req.body as {
-      eventId: string; amount: number; selection: string;
+    const { stellarAddress, eventId, amount, selection } = req.body as {
+      stellarAddress: string; eventId: string; amount: number; selection: string;
     };
 
     try {
@@ -114,6 +132,7 @@ bettingRoutes.post(
       // TODO: submit to Stellar smart contract
       const bet = {
         id: `bet-${Date.now()}`,
+        stellarAddress,
         eventId,
         amount,
         selection,

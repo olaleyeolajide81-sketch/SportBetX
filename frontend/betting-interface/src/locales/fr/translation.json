@@ -1,0 +1,48 @@
+{
+  "nav": {
+    "betting": "Paris",
+    "live": "En Direct",
+    "history": "Historique",
+    "governance": "Gouvernance",
+    "leaderboard": "Classement",
+    "profile": "Profil"
+  },
+  "wallet": {
+    "connect": "Connecter le Portefeuille",
+    "disconnect": "Déconnecter"
+  },
+  "betting": {
+    "title": "Paris Sportifs",
+    "searchPlaceholder": "Rechercher des événements...",
+    "liveOnly": "En Direct Seulement",
+    "sortByTime": "Trier par Heure",
+    "sortByOdds": "Trier par Cotes",
+    "sortByVolume": "Trier par Volume",
+    "noEvents": "Aucun événement trouvé selon vos critères.",
+    "liveScores": "Scores en Direct",
+    "platformStats": "Statistiques",
+    "totalVolume": "Volume Total",
+    "liveEvents": "Événements en Direct",
+    "activeBettors": "Parieurs Actifs",
+    "decimal": "Décimal",
+    "american": "Américain",
+    "fractional": "Fractionnel"
+  },
+  "profile": {
+    "title": "Profil",
+    "address": "Adresse",
+    "connectPrompt": "Connectez votre portefeuille pour voir votre profil.",
+    "referral": {
+      "title": "Programme de Parrainage",
+      "code": "Votre Code de Parrainage",
+      "link": "Lien de Parrainage",
+      "copy": "Copier",
+      "copied": "Copié !",
+      "totalReferred": "Total Parrainés",
+      "lifetimeEarnings": "Gains Totaux",
+      "users": "utilisateurs",
+      "referrals": "Parrainages",
+      "noReferrals": "Pas encore de parrainages. Partagez votre lien pour commencer à gagner !"
+    }
+  }
+}

@@ -5,8 +5,10 @@ import {
   Clock, 
   Trophy, 
   Users,
-  Search
+  Search,
+  Loader2,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useBettingStore } from '../store/bettingStore';
 import { useWalletStore } from '../store/walletStore';
 import { BetSlip } from '../components/BetSlip';
@@ -14,8 +16,10 @@ import { EventCard } from '../components/EventCard';
 import { SportsFilter } from '../components/SportsFilter';
 import { LiveScore } from '../components/LiveScore';
 import { SportsEvent, BetType } from '../types/sports';
+import { useDebounce } from '../hooks/useDebounce';
 
 export const BettingInterface: React.FC = () => {
+  const { t } = useTranslation();
   const {
     events,
     selectedEvents,
@@ -33,16 +37,22 @@ export const BettingInterface: React.FC = () => {
   const [selectedSport, setSelectedSport] = useState('all');
   const [showLiveOnly, setShowLiveOnly] = useState(false);
   const [sortBy, setSortBy] = useState<'time' | 'odds' | 'volume'>('time');
+  const [isSearching, setIsSearching] = useState(false);
+
+  const debouncedSearch = useDebounce(searchTerm, 300);
 
   useEffect(() => {
-    // Fetch events from API
-    fetchEvents();
+    fetchEvents(debouncedSearch);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSport, showLiveOnly, sortBy]);
+  }, [debouncedSearch, selectedSport, showLiveOnly, sortBy]);
 
-  const fetchEvents = async () => {
+  const fetchEvents = async (search = '') => {
+    setIsSearching(true);
     try {
-      // TODO: Implement API call
+      const params = new URLSearchParams();
+      if (search) params.set('search', search);
+      const url = `/api/v1/betting/events${params.toString() ? `?${params}` : ''}`;
+      // TODO: replace with real API call using axios
       const mockEvents: SportsEvent[] = [
         {
           id: '1',
@@ -54,12 +64,8 @@ export const BettingInterface: React.FC = () => {
           endTime: Date.now() + 7200000,
           status: 'upcoming',
           outcome: 'pending',
-          odds: {
-            home: 180, // 1.8x
-            away: 200, // 2.0x
-            draw: 350, // 3.5x
-          },
-          volume: 50000000, // 5 XLM
+          odds: { home: 180, away: 200, draw: 350 },
+          volume: 50000000,
         },
         {
           id: '2',
@@ -71,18 +77,18 @@ export const BettingInterface: React.FC = () => {
           endTime: Date.now() + 10800000,
           status: 'live',
           outcome: 'pending',
-          odds: {
-            home: 150, // 1.5x
-            away: 250, // 2.5x
-            draw: 300, // 3.0x
-          },
-          volume: 75000000, // 7.5 XLM
+          odds: { home: 150, away: 250, draw: 300 },
+          volume: 75000000,
         },
       ];
-      
-      setEvents(mockEvents);
+      const filtered = search
+        ? mockEvents.filter(e => e.title.toLowerCase().includes(search.toLowerCase()))
+        : mockEvents;
+      setEvents(filtered);
     } catch (error) {
       console.error('Failed to fetch events:', error);
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -119,11 +125,9 @@ export const BettingInterface: React.FC = () => {
   };
 
   const filteredEvents = events.filter((event) => {
-    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSport = selectedSport === 'all' || event.sport === selectedSport;
     const matchesLive = !showLiveOnly || event.status === 'live';
-    
-    return matchesSearch && matchesSport && matchesLive;
+    return matchesSport && matchesLive;
   });
 
   const sortedEvents = [...filteredEvents].sort((a, b) => {
@@ -165,18 +169,21 @@ export const BettingInterface: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Sports Betting
+              {t('betting.title')}
             </h1>
             <div className="flex items-center space-x-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
-                  placeholder="Search events..."
+                  placeholder={t('betting.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
+                {isSearching && (
+                  <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 animate-spin" />
+                )}
               </div>
               <button
                 onClick={() => setShowLiveOnly(!showLiveOnly)}
@@ -187,7 +194,7 @@ export const BettingInterface: React.FC = () => {
                 }`}
               >
                 <Clock className="w-4 h-4" />
-                <span>Live Only</span>
+                <span>{t('betting.liveOnly')}</span>
               </button>
             </div>
           </div>
@@ -204,9 +211,9 @@ export const BettingInterface: React.FC = () => {
               onChange={(e) => setSortBy(e.target.value as 'time' | 'odds' | 'volume')}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
-              <option value="time">Sort by Time</option>
-              <option value="odds">Sort by Odds</option>
-              <option value="volume">Sort by Volume</option>
+              <option value="time">{t('betting.sortByTime')}</option>
+              <option value="odds">{t('betting.sortByOdds')}</option>
+              <option value="volume">{t('betting.sortByVolume')}</option>
             </select>
 
             <select
@@ -214,9 +221,9 @@ export const BettingInterface: React.FC = () => {
               onChange={(e) => setOddsFormat(e.target.value as 'decimal' | 'american' | 'fractional')}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
-              <option value="decimal">Decimal</option>
-              <option value="american">American</option>
-              <option value="fractional">Fractional</option>
+              <option value="decimal">{t('betting.decimal')}</option>
+              <option value="american">{t('betting.american')}</option>
+              <option value="fractional">{t('betting.fractional')}</option>
             </select>
           </div>
         </div>
@@ -237,7 +244,7 @@ export const BettingInterface: React.FC = () => {
         {filteredEvents.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-500 dark:text-gray-400">
-              No events found matching your criteria.
+              {t('betting.noEvents')}
             </div>
           </div>
         )}
@@ -250,7 +257,7 @@ export const BettingInterface: React.FC = () => {
           <div className="flex items-center space-x-2 mb-4">
             <Trophy className="w-5 h-5 text-green-500" />
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Live Scores
+              {t('betting.liveScores')}
             </h2>
           </div>
           
@@ -280,20 +287,20 @@ export const BettingInterface: React.FC = () => {
           <div className="flex items-center space-x-2 mb-4">
             <TrendingUp className="w-5 h-5 text-blue-500" />
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Platform Stats
+              {t('betting.platformStats')}
             </h2>
           </div>
           
           <div className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Total Volume</span>
+              <span className="text-gray-600 dark:text-gray-400">{t('betting.totalVolume')}</span>
               <span className="font-semibold text-gray-900 dark:text-white">
                 {events.reduce((sum, event) => sum + event.volume, 0) / 1000000} XLM
               </span>
             </div>
             
             <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Live Events</span>
+              <span className="text-gray-600 dark:text-gray-400">{t('betting.liveEvents')}</span>
               <span className="font-semibold text-gray-900 dark:text-white">
                 {events.filter(event => event.status === 'live').length}
               </span>

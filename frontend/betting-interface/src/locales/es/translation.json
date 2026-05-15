@@ -1,0 +1,48 @@
+{
+  "nav": {
+    "betting": "Apuestas",
+    "live": "En Vivo",
+    "history": "Historial",
+    "governance": "Gobernanza",
+    "leaderboard": "Clasificación",
+    "profile": "Perfil"
+  },
+  "wallet": {
+    "connect": "Conectar Billetera",
+    "disconnect": "Desconectar"
+  },
+  "betting": {
+    "title": "Apuestas Deportivas",
+    "searchPlaceholder": "Buscar eventos...",
+    "liveOnly": "Solo En Vivo",
+    "sortByTime": "Ordenar por Hora",
+    "sortByOdds": "Ordenar por Cuotas",
+    "sortByVolume": "Ordenar por Volumen",
+    "noEvents": "No se encontraron eventos con esos criterios.",
+    "liveScores": "Marcadores en Vivo",
+    "platformStats": "Estadísticas",
+    "totalVolume": "Volumen Total",
+    "liveEvents": "Eventos en Vivo",
+    "activeBettors": "Apostadores Activos",
+    "decimal": "Decimal",
+    "american": "Americano",
+    "fractional": "Fraccionario"
+  },
+  "profile": {
+    "title": "Perfil",
+    "address": "Dirección",
+    "connectPrompt": "Conecta tu billetera para ver tu perfil.",
+    "referral": {
+      "title": "Programa de Referidos",
+      "code": "Tu Código de Referido",
+      "link": "Enlace de Referido",
+      "copy": "Copiar",
+      "copied": "¡Copiado!",
+      "totalReferred": "Total Referidos",
+      "lifetimeEarnings": "Ganancias Totales",
+      "users": "usuarios",
+      "referrals": "Referidos",
+      "noReferrals": "Aún no tienes referidos. ¡Comparte tu enlace para empezar a ganar!"
+    }
+  }
+}
