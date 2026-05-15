@@ -1,0 +1,48 @@
+{
+  "nav": {
+    "betting": "Betting",
+    "live": "Live",
+    "history": "History",
+    "governance": "Governance",
+    "leaderboard": "Leaderboard",
+    "profile": "Profile"
+  },
+  "wallet": {
+    "connect": "Connect Wallet",
+    "disconnect": "Disconnect"
+  },
+  "betting": {
+    "title": "Sports Betting",
+    "searchPlaceholder": "Search events...",
+    "liveOnly": "Live Only",
+    "sortByTime": "Sort by Time",
+    "sortByOdds": "Sort by Odds",
+    "sortByVolume": "Sort by Volume",
+    "noEvents": "No events found matching your criteria.",
+    "liveScores": "Live Scores",
+    "platformStats": "Platform Stats",
+    "totalVolume": "Total Volume",
+    "liveEvents": "Live Events",
+    "activeBettors": "Active Bettors",
+    "decimal": "Decimal",
+    "american": "American",
+    "fractional": "Fractional"
+  },
+  "profile": {
+    "title": "Profile",
+    "address": "Address",
+    "connectPrompt": "Connect your wallet to view your profile.",
+    "referral": {
+      "title": "Referral Program",
+      "code": "Your Referral Code",
+      "link": "Referral Link",
+      "copy": "Copy",
+      "copied": "Copied!",
+      "totalReferred": "Total Referred",
+      "lifetimeEarnings": "Lifetime Earnings",
+      "users": "users",
+      "referrals": "Referrals",
+      "noReferrals": "No referrals yet. Share your link to start earning!"
+    }
+  }
+}

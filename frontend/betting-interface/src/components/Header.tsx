@@ -14,6 +14,12 @@ const navItems = [
   { path: '/leaderboard', label: 'Leaderboard' },
 ];
 
+const LANGUAGES = [
+  { code: 'en', label: 'EN' },
+  { code: 'es', label: 'ES' },
+  { code: 'fr', label: 'FR' },
+];
+
 export const Header: React.FC = () => {
   const { isDarkMode, toggleDarkMode } = useThemeStore();
   const { isConnected, account, connect, disconnect } = useWalletStore();

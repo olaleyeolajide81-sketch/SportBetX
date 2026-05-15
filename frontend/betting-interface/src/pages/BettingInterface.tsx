@@ -8,6 +8,7 @@ import {
   Search,
   Loader2
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useBettingStore } from '../store/bettingStore';
 import { useWalletStore } from '../store/walletStore';
 import { BetSlip } from '../components/BetSlip';
@@ -18,6 +19,7 @@ import { SportsEvent, BetType } from '../types/sports';
 import { useI18n } from '../i18n/I18nProvider';
 
 export const BettingInterface: React.FC = () => {
+  const { t } = useTranslation();
   const {
     events,
     selectedEvents,
@@ -103,11 +105,9 @@ export const BettingInterface: React.FC = () => {
   };
 
   const filteredEvents = events.filter((event) => {
-    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSport = selectedSport === 'all' || event.sport === selectedSport;
     const matchesLive = !showLiveOnly || event.status === 'live';
-    
-    return matchesSearch && matchesSport && matchesLive;
+    return matchesSport && matchesLive;
   });
 
   const sortedEvents = [...filteredEvents].sort((a, b) => {
@@ -154,8 +154,11 @@ export const BettingInterface: React.FC = () => {
                   placeholder={t.betting.search}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
+                {isSearching && (
+                  <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 animate-spin" />
+                )}
               </div>
               <button
                 onClick={() => setShowLiveOnly(!showLiveOnly)}
@@ -166,7 +169,7 @@ export const BettingInterface: React.FC = () => {
                 }`}
               >
                 <Clock className="w-4 h-4" />
-                <span>Live Only</span>
+                <span>{t('betting.liveOnly')}</span>
               </button>
             </div>
           </div>
@@ -183,9 +186,9 @@ export const BettingInterface: React.FC = () => {
               onChange={(e) => setSortBy(e.target.value as 'time' | 'odds' | 'volume')}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
-              <option value="time">Sort by Time</option>
-              <option value="odds">Sort by Odds</option>
-              <option value="volume">Sort by Volume</option>
+              <option value="time">{t('betting.sortByTime')}</option>
+              <option value="odds">{t('betting.sortByOdds')}</option>
+              <option value="volume">{t('betting.sortByVolume')}</option>
             </select>
 
             <select
@@ -216,7 +219,7 @@ export const BettingInterface: React.FC = () => {
         {filteredEvents.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-500 dark:text-gray-400">
-              No events found matching your criteria.
+              {t('betting.noEvents')}
             </div>
           </div>
         )}
@@ -259,20 +262,20 @@ export const BettingInterface: React.FC = () => {
           <div className="flex items-center space-x-2 mb-4">
             <TrendingUp className="w-5 h-5 text-blue-500" />
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Platform Stats
+              {t('betting.platformStats')}
             </h2>
           </div>
           
           <div className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Total Volume</span>
+              <span className="text-gray-600 dark:text-gray-400">{t('betting.totalVolume')}</span>
               <span className="font-semibold text-gray-900 dark:text-white">
                 {events.reduce((sum, event) => sum + event.volume, 0) / 1000000} XLM
               </span>
             </div>
             
             <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Live Events</span>
+              <span className="text-gray-600 dark:text-gray-400">{t('betting.liveEvents')}</span>
               <span className="font-semibold text-gray-900 dark:text-white">
                 {events.filter(event => event.status === 'live').length}
               </span>
