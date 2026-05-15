@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { body } from 'express-validator';
 import { validate } from '../middleware/validate';
+import { stellarAddressRateLimiter } from '../middleware/rateLimiter';
 import { logger } from '../utils/logger';
 
 export const liquidityRoutes = Router();
@@ -22,6 +23,7 @@ liquidityRoutes.post(
     body('amount').isFloat({ gt: 0 }).withMessage('amount must be a positive number'),
   ],
   validate,
+  stellarAddressRateLimiter,
   async (req: Request, res: Response) => {
     const { poolId, amount } = req.body as { poolId: string; amount: number };
     try {

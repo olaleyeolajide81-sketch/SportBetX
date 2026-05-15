@@ -1,0 +1,65 @@
+const es = {
+  nav: {
+    betting: 'Apuestas',
+    live: 'En Vivo',
+    history: 'Historial',
+    profile: 'Perfil',
+    governance: 'Gobernanza',
+    leaderboard: 'Clasificación',
+    menu: 'Menú',
+    lightMode: 'Modo Claro',
+    darkMode: 'Modo Oscuro',
+  },
+  betting: {
+    title: 'Apuestas Deportivas',
+    search: 'Buscar eventos...',
+    liveOnly: 'Solo En Vivo',
+    sortByTime: 'Ordenar por Hora',
+    sortByOdds: 'Ordenar por Cuotas',
+    sortByVolume: 'Ordenar por Volumen',
+    decimal: 'Decimal',
+    american: 'Americano',
+    fractional: 'Fraccionario',
+    noEvents: 'No se encontraron eventos que coincidan con sus criterios.',
+  },
+  betSlip: {
+    title: 'Comprobante de Apuesta',
+    placeBet: 'Colocar Apuesta',
+    remove: 'Eliminar',
+    totalStake: 'Apuesta Total',
+    potentialPayout: 'Pago Potencial',
+    empty: 'Seleccione un resultado para agregar a su comprobante.',
+  },
+  liveScores: {
+    title: 'Puntuaciones en Vivo',
+  },
+  stats: {
+    title: 'Estadísticas de la Plataforma',
+    totalVolume: 'Volumen Total',
+    liveEvents: 'Eventos en Vivo',
+    activeBettors: 'Apostadores Activos',
+  },
+  wallet: {
+    connect: 'Conectar Billetera',
+    disconnect: 'Desconectar',
+  },
+  auth: {
+    register: 'Registrarse',
+    login: 'Iniciar Sesión',
+    logout: 'Cerrar Sesión',
+    username: 'Nombre de Usuario',
+    address: 'Dirección',
+  },
+  common: {
+    loading: 'Cargando...',
+    error: 'Ocurrió un error',
+    retry: 'Reintentar',
+    save: 'Guardar',
+    cancel: 'Cancelar',
+    confirm: 'Confirmar',
+    search: 'Buscar',
+    all: 'Todos',
+  },
+};
+
+export default es;

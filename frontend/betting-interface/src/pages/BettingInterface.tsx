@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
   TrendingUp, 
@@ -6,7 +6,7 @@ import {
   Trophy, 
   Users,
   Search,
-  Loader2,
+  Loader2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useBettingStore } from '../store/bettingStore';
@@ -16,7 +16,7 @@ import { EventCard } from '../components/EventCard';
 import { SportsFilter } from '../components/SportsFilter';
 import { LiveScore } from '../components/LiveScore';
 import { SportsEvent, BetType } from '../types/sports';
-import { useDebounce } from '../hooks/useDebounce';
+import { useI18n } from '../i18n/I18nProvider';
 
 export const BettingInterface: React.FC = () => {
   const { t } = useTranslation();
@@ -33,64 +33,44 @@ export const BettingInterface: React.FC = () => {
   } = useBettingStore();
 
   const { isConnected, account } = useWalletStore();
+  const { t } = useI18n();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSport, setSelectedSport] = useState('all');
   const [showLiveOnly, setShowLiveOnly] = useState(false);
   const [sortBy, setSortBy] = useState<'time' | 'odds' | 'volume'>('time');
-  const [isSearching, setIsSearching] = useState(false);
+  const [searching, setSearching] = useState(false);
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
-  useEffect(() => {
-    fetchEvents(debouncedSearch);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch, selectedSport, showLiveOnly, sortBy]);
-
-  const fetchEvents = async (search = '') => {
-    setIsSearching(true);
+  const fetchEvents = useCallback(async (term: string) => {
+    setSearching(true);
     try {
-      const params = new URLSearchParams();
-      if (search) params.set('search', search);
-      const url = `/api/v1/betting/events${params.toString() ? `?${params}` : ''}`;
-      // TODO: replace with real API call using axios
-      const mockEvents: SportsEvent[] = [
-        {
-          id: '1',
-          title: 'Lakers vs Celtics',
-          sport: 'basketball',
-          homeTeam: 'Lakers',
-          awayTeam: 'Celtics',
-          startTime: Date.now() + 3600000,
-          endTime: Date.now() + 7200000,
-          status: 'upcoming',
-          outcome: 'pending',
-          odds: { home: 180, away: 200, draw: 350 },
-          volume: 50000000,
-        },
-        {
-          id: '2',
-          title: 'Real Madrid vs Barcelona',
-          sport: 'football',
-          homeTeam: 'Real Madrid',
-          awayTeam: 'Barcelona',
-          startTime: Date.now() + 7200000,
-          endTime: Date.now() + 10800000,
-          status: 'live',
-          outcome: 'pending',
-          odds: { home: 150, away: 250, draw: 300 },
-          volume: 75000000,
-        },
-      ];
-      const filtered = search
-        ? mockEvents.filter(e => e.title.toLowerCase().includes(search.toLowerCase()))
-        : mockEvents;
-      setEvents(filtered);
+      const status = showLiveOnly ? 'live' : undefined;
+      const result = await searchEvents(term, selectedSport, status);
+      const mapped: SportsEvent[] = result.data.map((e) => ({
+        id: e.id,
+        title: e.title,
+        sport: e.sport,
+        homeTeam: e.homeTeam,
+        awayTeam: e.awayTeam,
+        startTime: e.startTime,
+        endTime: e.startTime + 3600000,
+        status: e.status as 'upcoming' | 'live' | 'finished',
+        outcome: 'pending',
+        odds: e.odds,
+        volume: e.volume,
+      }));
+      setEvents(mapped);
     } catch (error) {
       console.error('Failed to fetch events:', error);
     } finally {
-      setIsSearching(false);
+      setSearching(false);
     }
-  };
+  }, [selectedSport, showLiveOnly, setEvents]);
+
+  useEffect(() => {
+    fetchEvents(debouncedSearch);
+  }, [debouncedSearch, fetchEvents]);
 
   const handleEventSelect = (event: SportsEvent, selection: string, odds: number) => {
     const betSelection = {
@@ -144,16 +124,7 @@ export const BettingInterface: React.FC = () => {
   });
 
   const formatOdds = (odds: number) => {
-    switch (oddsFormat) {
-      case 'decimal':
-        return (odds / 100).toFixed(2);
-      case 'american':
-        return odds > 100 ? `+${odds - 100}` : `-${100 - odds}`;
-      case 'fractional':
-        return `${odds}/100`;
-      default:
-        return (odds / 100).toFixed(2);
-    }
+    return convertOdds(odds / 100, 'decimal', oddsFormat as OddsFormat);
   };
 
   return (
@@ -169,14 +140,18 @@ export const BettingInterface: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {t('betting.title')}
+              {t.betting.title}
             </h1>
             <div className="flex items-center space-x-2">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                {searching ? (
+                  <Loader2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 animate-spin" />
+                ) : (
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                )}
                 <input
                   type="text"
-                  placeholder={t('betting.searchPlaceholder')}
+                  placeholder={t.betting.search}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -221,9 +196,9 @@ export const BettingInterface: React.FC = () => {
               onChange={(e) => setOddsFormat(e.target.value as 'decimal' | 'american' | 'fractional')}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
-              <option value="decimal">{t('betting.decimal')}</option>
-              <option value="american">{t('betting.american')}</option>
-              <option value="fractional">{t('betting.fractional')}</option>
+              <option value="decimal">{t.betting.decimal}</option>
+              <option value="american">{t.betting.american}</option>
+              <option value="fractional">{t.betting.fractional}</option>
             </select>
           </div>
         </div>
@@ -257,7 +232,7 @@ export const BettingInterface: React.FC = () => {
           <div className="flex items-center space-x-2 mb-4">
             <Trophy className="w-5 h-5 text-green-500" />
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {t('betting.liveScores')}
+              {t.liveScores.title}
             </h2>
           </div>
           

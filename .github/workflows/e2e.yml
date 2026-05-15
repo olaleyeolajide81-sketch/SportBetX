@@ -1,0 +1,53 @@
+name: E2E Tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: sportbetx
+          POSTGRES_USER: sportbetx
+          POSTGRES_PASSWORD: sportbetx123
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: backend/api-gateway
+      - name: Start server
+        run: |
+          npx tsx src/index.ts &
+          sleep 5
+        working-directory: backend/api-gateway
+        env:
+          NODE_ENV: test
+          PORT: 3000
+      - name: Install Playwright
+        run: npm install && npx playwright install --with-deps chromium
+        working-directory: tests/e2e
+      - name: Run Playwright tests
+        run: npm test
+        working-directory: tests/e2e
+        env:
+          BASE_URL: http://localhost:3000
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: tests/e2e/playwright-report/
+          retention-days: 30

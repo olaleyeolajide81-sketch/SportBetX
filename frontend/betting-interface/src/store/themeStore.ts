@@ -29,6 +29,18 @@ export const useThemeStore = create<ThemeState>((set) => {
   const initial = getInitialDarkMode();
   applyTheme(initial);
 
+  if (typeof window !== 'undefined') {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored === null) {
+        applyTheme(e.matches);
+        set({ isDarkMode: e.matches });
+      }
+    };
+    mediaQuery.addEventListener('change', handleChange);
+  }
+
   return {
     isDarkMode: initial,
     toggleDarkMode: () =>

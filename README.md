@@ -283,7 +283,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **🏈 Revolutionizing sports betting with transparency and fairness on Stellar, one bet at a time!**
-=======
-# SportBetX
-Complete Decentralized Sports Betting Platform
->>>>>>> f466627823522e3b569c2e334c097826bfde8a04
+
+## 📚 Documentation
+
+- **API Reference**: [docs/api-reference.md](docs/api-reference.md)

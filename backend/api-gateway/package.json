@@ -34,7 +34,8 @@
     "express-validator": "^7.0.1",
     "node-cron": "^3.0.3",
     "web-push": "^3.6.3",
-    "prom-client": "^15.1.0"
+    "prom-client": "^15.1.0",
+    "pg": "^8.11.3"
   },
   "devDependencies": {
     "@types/node": "^20.9.0",
@@ -58,6 +59,7 @@
     "ts-jest": "^29.1.1",
     "tsx": "^4.6.0",
     "typescript": "^5.2.2",
+    "@types/pg": "^8.10.9",
     "supertest": "^6.3.3"
   },
   "engines": {

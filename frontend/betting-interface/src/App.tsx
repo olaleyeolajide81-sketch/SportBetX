@@ -13,6 +13,7 @@ import { Leaderboard } from './pages/Leaderboard';
 import { Governance } from './pages/Governance';
 import { useThemeStore } from './store/themeStore';
 import { useToast } from './hooks/useToast';
+import { I18nProvider } from './i18n/I18nProvider';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 3, refetchOnWindowFocus: false, staleTime: 30000 } },
@@ -51,9 +52,11 @@ function AppInner() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <AppInner />
-      </Router>
+      <I18nProvider>
+        <Router>
+          <AppInner />
+        </Router>
+      </I18nProvider>
     </QueryClientProvider>
   );
 }
