@@ -98,7 +98,7 @@ export const BettingInterface: React.FC = () => {
     if (!isConnected || !account || betSlip.length === 0) return;
 
     try {
-      await placeBet();
+      await placeBet(account);
     } catch (error) {
       console.error('Failed to place bet:', error);
     }
