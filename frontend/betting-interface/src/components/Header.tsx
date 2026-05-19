@@ -46,6 +46,6 @@ export const Header: React.FC = () => {
           {isConnected ? `${account?.slice(0, 6)}…` : t.wallet.connect}
         </button>
       </div>
-    </>
+    </header>
   );
 };
